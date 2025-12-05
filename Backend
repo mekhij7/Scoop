@@ -1,0 +1,17 @@
+/users/{userId} {
+displayName: string,
+email: string,
+points: number,
+totalSteps: number,
+dailySteps: { '2025-11-25': 6432, ... },
+streak: number,
+}
+/rewards/{rewardId} {
+title, cost, description, imageUrl, inventory (optional)
+}
+/userRewards/{docId} {
+userId, rewardId, redeemedAt, status, fulfillmentData
+}
+/challenges/{challengeId} {
+title, targetSteps, rewardPoints, startDate, endDate
+}
