@@ -1,0 +1,80 @@
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import useStepCount from '../hooks/useStepCount';
+
+
+export default function RewardsPage() {
+const stepsToday = useStepCount();
+const points = Math.floor(stepsToday / 100);
+
+
+return (
+<View style={styles.container}>
+<Text style={styles.header}>Rewards</Text>
+<Text style={styles.steps}>Steps Today: {stepsToday}</Text>
+<Text style={styles.points}>Reward Points: {points}</Text>
+
+
+<TouchableOpacity style={styles.redeemButton}>
+<Text style={styles.redeemText}>Redeem</Text>
+</TouchableOpacity>
+</View>
+);
+}
+
+
+const styles = StyleSheet.create({
+container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+header: { fontSize: 30, fontWeight: 'bold', marginBottom: 20 },
+steps: { fontSize: 22, marginTop: 10 },
+points: { fontSize: 22, marginTop: 10 },
+redeemButton: { marginTop: 30, padding: 15, backgroundColor: '#222', borderRadius: 10 },
+redeemText: { color: '#fff', textAlign: 'center', fontSize: 18 }
+});
+
+import { useEffect, useState } from 'react';
+import * as HealthKit from 'expo-health-kit';
+
+
+export default function useStepCount() {
+const [steps, setSteps] = useState(0);
+
+
+useEffect(() => {
+async function loadSteps() {
+const available = await HealthKit.isAvailableAsync();
+if (!available) return;
+
+
+await HealthKit.requestAuthorizationAsync({
+read: [HealthKit.HealthKitDataType.StepCount],
+});
+
+
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+
+const stepData = await HealthKit.getDailyStepCountAsync(today);
+
+
+if (stepData) {
+setSteps(stepData.steps);
+}
+
+
+const subscription = HealthKit.subscribeToDailyStepCounts((data) => {
+setSteps(data?.steps ?? 0);
+});
+
+
+return () => subscription && subscription.remove();
+}
+
+
+loadSteps();
+}, []);
+
+
+return steps;
+}
