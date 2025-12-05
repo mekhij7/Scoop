@@ -1,0 +1,46 @@
+import { useEffect, useState } from 'react';
+import * as HealthKit from 'expo-health-kit';
+
+
+export default function useStepCount() {
+const [steps, setSteps] = useState(0);
+
+
+useEffect(() => {
+async function loadSteps() {
+const available = await HealthKit.isAvailableAsync();
+if (!available) return;
+
+
+await HealthKit.requestAuthorizationAsync({
+read: [HealthKit.HealthKitDataType.StepCount],
+});
+
+
+const today = new Date();
+today.setHours(0, 0, 0, 0);
+
+
+const stepData = await HealthKit.getDailyStepCountAsync(today);
+
+
+if (stepData) {
+setSteps(stepData.steps);
+}
+
+
+const subscription = HealthKit.subscribeToDailyStepCounts((data) => {
+setSteps(data?.steps ?? 0);
+});
+
+
+return () => subscription && subscription.remove();
+}
+
+
+loadSteps();
+}, []);
+
+
+return steps;
+}
